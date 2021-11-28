@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Roboterarm</title>
+    <style>
+      body {
+        margin: 0;
+      }
+    </style>
+  </head>
+
+  <body>
+    <script src="js/three.js"></script>
+    <script src="js/GLTFLoader.js"></script>
+    <script>
+      //Setup der Szene
+
+      const scene = new THREE.Scene()
+      const camera = new THREE.PerspectiveCamera(
+        75,
+        window.innerWidth / window.innerHeight,
+        0.1,
+        1000,
+      )
+
+      const renderer = new THREE.WebGLRenderer()
+      renderer.setSize(window.innerWidth, window.innerHeight)
+      document.body.appendChild(renderer.domElement)
+
+      scene.background = new THREE.Color(0xf0ff00)
+
+      camera.position.x = 20
+      camera.position.z = 20
+      camera.position.y = 20
+      camera.rotation.z = 8
+
+      var cube
+
+      function init() {
+        // ... (scene initialization)
+        initCube()
+        // ...
+      }
+      var material = new THREE.MeshBasicMaterial({
+        color: 0xfffff,
+        wireframe: true})
+
+
+      function initCube() {
+        cube = new THREE.Mesh(
+          new THREE.CubeGeometry(2, 2, 2),
+          material,
+        )
+
+        scene.add(cube)
+
+        cube.position.x = 18
+        cube.position.z = 20
+        cube.position.y = 18
+      }
+
+      function render() {
+        renderer.render(scene, camera)
+      }
+
+      renderer.render(scene, camera)
+
+      /* var mat = new THREE.MeshBasicMaterial();
+
+      var mainHandGeometry = new THREE.BoxGeometry(50, 10, 10);
+      var mainMesh = new THREE.Mesh(mainHandGeometry, mat);
+
+      var midHandGeometry = new THREE.BoxGeometry(30, 5, 5);
+      var midMesh = new THREE.Mesh(midHandGeometry, mat);
+
+      var lastHandGeometry = new THREE.BoxGeometry(15, 3, 3);
+      var lastMesh = new THREE.Mesh(lastHandGeometry, mat);
+
+      midMesh.add(lastMesh);
+      lastMesh.position.set(10, 10, 10);
+      mainMesh.add(lastMesh);
+      midMesh.position.set(10, 10, 10);*/
+
+      //**
+
+      //Cubes
+
+      //const geometry_wireframe = new THREE.BoxGeometry(1.001, 1.001, 1.001);
+      //const material_wireframe = new THREE.MeshBasicMaterial({ color: 0x000000, wireframe: true });
+      //const cube_wireframe = new THREE.Mesh(geometry_wireframe, material_wireframe);
+      //scene.add(cube_wireframe);
+
+      //camera.position.z = 5;
+
+      //**
+
+      //Rendern
+
+      //function animate() {
+      //    requestAnimationFrame(animate);
+
+      //    renderer.render(scene, camera);
+      //}
+      //sanimate();
+
+      //**
+    </script>
+  </body>
+</html>
