@@ -1,161 +1,216 @@
 <!DOCTYPE html>
 <html>
+  <head>
+    <title>LOOOOOOL</title>
+    <style>
+      canvas {
+        width: 100%;
+        height: 100%;
+      }
+    </style>
+  </head>
 
-<head>
-  <title>My first Three.js app</title>
-  <style>
-    canvas {
-      width: 100%;
-      height: 100%;
-    }
-  </style>
-</head>
+  <body>
+    <script src="./js/three.js"></script>
+    <script>'three/examples/jsm/libs/dat.gui.module'</script>
+    <script>
+      
+      const NEUNZIG_GRAD = Math.PI / 2
 
-<body>
-  <script src="./js/three.js"></script>
-  <script>
+      var scene = new THREE.Scene()
 
-    const NEUNZIG_GRAD = Math.PI / 2
-
-    var scene = new THREE.Scene()
-
-    var camera = new THREE.PerspectiveCamera(
-      75,
-      window.innerWidth / window.innerHeight,
-      1,
-      10000,
-    )
-
-
-
-    // LIGHTS   //das ist ein kommentar
-    ambientLight = new THREE.AmbientLight(0xffffff, 0.5)
-    scene.add(ambientLight)
-    light = new THREE.PointLight(0xffffff, 0.8, 100)
-    light.position.set(0, 10, 20)
-    light.castShadow = true
-    // Will not light anything closer than 0.1 units or further than 25 units
-    light.shadow.camera.near = 0.1
-    light.shadow.camera.far = 25
-    scene.add(light)
-    var renderer = new THREE.WebGLRenderer()
-    renderer.setSize(window.innerWidth, window.innerHeight)
-    document.body.appendChild(renderer.domElement)
-
-    function addBasicCube() {
-      var geometry = new THREE.BoxGeometry(7, 7, 7, 0.1, 0.1, 0.1)
-      var material = new THREE.MeshPhongMaterial({
-        color: 0xff0000,
-      })
-      var cube = new THREE.Mesh(geometry, material)
-      cube.receiveShadow = true
-      cube.castShadow = true
-      scene.add(cube)
-    }
-
-    function addArmWithPivot(pos, scale_x, scale_y, scale_z) {
-      //add arm
-      var geometry = new THREE.BoxGeometry(
-        scale_x,
-        scale_y,
-        scale_z,
+      var camera = new THREE.PerspectiveCamera(
+        75,
+        window.innerWidth / window.innerHeight,
+        1,
+        10000,
       )
-      geometry.translate(scale_x / 2, 0, 0)
-      var material = new THREE.MeshPhongMaterial({ color: 0xff0000 })
-      var cube = new THREE.Mesh(geometry, material)
-      cube.receiveShadow = true
-      cube.castShadow = true
-      cube.position.x = pos.x
-      cube.position.y = pos.y
-      cube.position.z = pos.z
-      cube.name = 'arm2'
+      camera.position.x = 20
+      camera.position.z = 80
+      camera.position.y = 15
 
-      scene.add(cube)
+      // LIGHTS   //das ist ein kommentar
+      ambientLight = new THREE.AmbientLight(0xffffff, 0.5)
+      scene.add(ambientLight)
+      light = new THREE.PointLight(0xffffff, 0.8, 100)
+      light.position.set(0, 10, 20)
+      light.castShadow = true
+      // Will not light anything closer than 0.1 units or further than 25 units
+      light.shadow.camera.near = 0.1
+      light.shadow.camera.far = 25
+      scene.add(light)
+      var renderer = new THREE.WebGLRenderer()
+      renderer.setClearColor(0xaaaaaa)
+      renderer.setSize(window.innerWidth, window.innerHeight)
+      document.body.appendChild(renderer.domElement)
 
-      //
-      // ZWEITER CUBE 
-      //Wichtiger kommentar von Nhi Mai:
-      //mommy?
-      //
+      function addBasicCube() {
+        var geometry = new THREE.BoxGeometry(7, 7, 7, 0.1, 0.1, 0.1)
+        var material = new THREE.MeshPhongMaterial({
+          color: 0xff0000,
+        })
+        var cube = new THREE.Mesh(geometry, material)
+        cube.receiveShadow = true
+        cube.castShadow = true
+        scene.add(cube)
+      }
 
-      var geometry_blob = new THREE.BoxGeometry(
-        scale_x,
-        scale_y,
-        scale_z,
-      )
-      geometry.translate(scale_x / 2, 0, 0)
-      var material_blob = new THREE.MeshPhongMaterial({ color: 0xff0000 })
-      var cube_blob = new THREE.Mesh(geometry, material)
-      cube_blob.receiveShadow = true
-      cube_blob.castShadow = true
-      cube_blob.position.x = pos.x
-      cube_blob.position.y = pos.y
-      cube_blob.position.z = pos.z
-      cube_blob.name = 'arm1'
-      cube_blob.rotation.z
+      function degToRad(angle) {
+        return (angle * Math.PI) / 180
+      }
 
-      scene.add(cube_blob)
+      function addArmsWithPivots(pos, scale_x, scale_y, scale_z) {
+        //add arm
+        var geometry = new THREE.BoxGeometry(scale_x, scale_y, scale_z)
+        geometry.translate(0, 0, 0)
+        var material = new THREE.MeshPhongMaterial({ color: 0x0000ff })
+        var cube = new THREE.Mesh(geometry, material)
+        cube.receiveShadow = true
+        cube.castShadow = true
+        cube.position.x = pos.x
+        cube.position.y = pos.y
+        cube.position.z = pos.z
+        cube.name = 'arm2'
 
-      cube_blob.rotation.z = NEUNZIG_GRAD;
+        scene.add(cube)
+
+        //
+        // ZWEITER CUBE
+        //
+
+        var geometry_blob = new THREE.BoxGeometry(scale_x, scale_y, scale_z)
+        geometry.translate(scale_x / 2, 0, 0)
+        var material_blob = new THREE.MeshPhongMaterial({ color: 0x00ff00 })
+        var cube_blob = new THREE.Mesh(geometry, material_blob)
+        cube_blob.receiveShadow = true
+        cube_blob.castShadow = true
+        cube_blob.position.x = pos.x
+        cube_blob.position.y = pos.y
+        cube_blob.position.z = pos.z
+        cube_blob.name = 'arm1'
+
+        scene.add(cube_blob)
+
+        cube_blob.position.x = -scale_x
+
+        //kleiner debug teil
+        //var kleineDebugVariable = getObjectByName('arm1')
+
+        //arm1.add(cube)
+
+        cube_blob.add(cube)
+
+        cube_blob.position.x = cube_blob.position.x + scale_x
+
+        cube.position.x = scale_x
+        cube.position.z = 0
+        cube.position.y = 0
+
+        var plate_geometry = new THREE.BoxGeometry(20, 1, 20)
+        plate_geometry.translate(0, 0, 0)
+        var plate_material = new THREE.MeshPhongMaterial({ color: 0xff0000 })
+        var plate = new THREE.Mesh(plate_geometry, plate_material)
+        plate.receiveShadow = true
+        plate.castShadow = true
+        plate.position.x = 0
+        plate.position.y = 0
+        plate.position.z = 0
+        plate.name = 'groundPlate'
+
+        scene.add(plate)
+
+        plate.add(cube_blob)
+      }
+
+      /* function buildGroundPlate() {
+        var geometry = new THREE.BoxGeometry(20, 1, 20)
+        geometry.translate(0, 0, 0)
+        var material = new THREE.MeshPhongMaterial({ color: 0xff0000 })
+        var plate = new THREE.Mesh(geometry, material)
+        plate.receiveShadow = true
+        plate.castShadow = true
+        plate.position.x = 0
+        plate.position.y = 0
+        plate.position.z = 0
+        plate.name = 'groundPlate'
+
+        scene.add(plate)
+        plate.add(getObjectByName('arm1'))
+
+        var arm2 = getObjectByName('arm2');
+        var arm1 = getObjectByName('arm1');
+
+      }*/
+
+      // buildGroundPlate()
+      addArmsWithPivots({ x: 1, y: 1, z: 1 }, 35, 5, 5)
+      move_by_angels(75, 20, 10)
 
 
 
-    }
-    addArmWithPivot(1, 1, 1, 35, 5, 5)
+      
 
 
-    camera.position.x = 20
-
-    function getObjectByName(name) {
-      var arm2 = scene.getObjectByName(name);
-    }
+      /*
 
 
-    function addArm(pos, lenght) {
-      var geometry = new THREE.BoxGeometry(
-        lenght,
-        5,
-        5,
-        pos.x,
-        pos.y,
-        pos.z
-      )
-      var material = new THREE.MeshPhongMaterial({ color: 0xff0000 })
-      var cube = new THREE.Mesh(geometry, material)
-      cube.receiveShadow = true
-      cube.castShadow = true
-      cube.position.x = pos.x
-      cube.position.y = pos.y
-      cube.position.z = pos.z
+        funktion drehmitwinkel( winkel 1 und winkel 2)
 
-      scene.add(cube)
-    }
+          cube 1 rotation = winkel 1
+          cube 2 rotation = winkel 2
 
-    function rotatePivot(degree, axe, object) {
-      var pivot_debug = new THREE.Object3D()
 
-    }
-    //(pos, scale_x, scale_y, scale_z)
 
-    function camera_mover_debug() {
-      //camera.position.x = camera.position.x + 20
-    }
+      */
 
-    camera.position.z = 40
-    camera.position.y = 15
-    //camera.rotation.x = -20;
+      function move_by_angels(winkel_arm1, winkel_arm2, winkel_groundPlate) {
+        var arm1 = scene.getObjectByName('arm1')
+        var arm2 = scene.getObjectByName('arm2')
+        var groundPlate = scene.getObjectByName('groundPlate')
 
-    function render() {
-      requestAnimationFrame(render)
-      // Enable Shadows in the Renderer
-      renderer.shadowMap.enabled = true
-      renderer.shadowMap.type = THREE.BasicShadowMap
-      renderer.render(scene, camera)
-    }
+        arm1.rotation.z = degToRad(winkel_arm1)
+        arm2.rotation.z = degToRad(-winkel_arm2)
+        groundPlate.rotation.y = degToRad(winkel_groundPlate)
+      }
 
-    render()
-    camera_mover_debug()
-  </script>
-</body>
+      function getObjectByName(name) {
+        var arm2 = scene.getObjectByName(name)
+      }
 
+      function addArm(pos, lenght) {
+        var geometry = new THREE.BoxGeometry(lenght, 5, 5, pos.x, pos.y, pos.z)
+        var material = new THREE.MeshPhongMaterial({ color: 0xff0000 })
+        var cube = new THREE.Mesh(geometry, material)
+        cube.receiveShadow = true
+        cube.castShadow = true
+        cube.position.x = pos.x
+        cube.position.y = pos.y
+        cube.position.z = pos.z
+
+        scene.add(cube)
+      }
+
+      function rotatePivot(degree, axe, object) {
+        var pivot_debug = new THREE.Object3D()
+      }
+      //(pos, scale_x, scale_y, scale_z)
+
+      function camera_mover_debug() {
+        //camera.position.x = camera.position.x + 20
+      }
+
+      //camera.rotation.x = -20;
+
+      function render() {
+        requestAnimationFrame(render)
+        // Enable Shadows in the Renderer
+        renderer.shadowMap.enabled = true
+        renderer.shadowMap.type = THREE.BasicShadowMap
+        renderer.render(scene, camera)
+      }
+
+      render()
+      camera_mover_debug()
+    </script>
+  </body>
 </html>
