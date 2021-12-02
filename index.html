@@ -11,13 +11,17 @@
   </head>
 
   <body>
+    <div>
+      <button type="button" style="height: 200; width: 400;"  onclick="bewegen()"> Bewegen</button>
+    </div>
     <script src="./js/three.js"></script>
-    <script>'three/examples/jsm/libs/dat.gui.module'</script>
+    <script type="text/javascript" src="lib/dat.gui.min.js"></script>
     <script>
-      
       const NEUNZIG_GRAD = Math.PI / 2
+      const lenght_arms = 35
 
       var scene = new THREE.Scene()
+      var gui = new dat.GUI();
 
       var camera = new THREE.PerspectiveCamera(
         75,
@@ -25,7 +29,7 @@
         1,
         10000,
       )
-      camera.position.x = 20
+      camera.position.x = 0
       camera.position.z = 80
       camera.position.y = 15
 
@@ -44,24 +48,38 @@
       renderer.setSize(window.innerWidth, window.innerHeight)
       document.body.appendChild(renderer.domElement)
 
-      function addBasicCube() {
-        var geometry = new THREE.BoxGeometry(7, 7, 7, 0.1, 0.1, 0.1)
+      function addBasicCube(pos) {
+        var geometry = new THREE.BoxGeometry(7, 7, 7)
+        geometry.translate(7 / 2, 3.5, 3.5)
         var material = new THREE.MeshPhongMaterial({
           color: 0xff0000,
         })
         var cube = new THREE.Mesh(geometry, material)
         cube.receiveShadow = true
         cube.castShadow = true
+        cube.position = pos
+        cube.name = 'cube'
         scene.add(cube)
+        cube.position.x = pos.x
+        cube.position.y = pos.y
+        cube.position.z = pos.z
+        gui.add(cube.position, "x", -50, 50)
+        gui.add(cube.position, "y", 0, 50)
+        gui.add(cube.position, "z", -50, 50)
+        
       }
 
       function degToRad(angle) {
         return (angle * Math.PI) / 180
       }
 
-      function addArmsWithPivots(pos, scale_x, scale_y, scale_z) {
+      function radToDeg(angle) {
+        return (angle / Math.PI) * 180
+      }
+
+      function addArmsWithPivots(pos, lenght_arms, scale_y, scale_z) {
         //add arm
-        var geometry = new THREE.BoxGeometry(scale_x, scale_y, scale_z)
+        var geometry = new THREE.BoxGeometry(lenght_arms, scale_y, scale_z)
         geometry.translate(0, 0, 0)
         var material = new THREE.MeshPhongMaterial({ color: 0x0000ff })
         var cube = new THREE.Mesh(geometry, material)
@@ -78,8 +96,8 @@
         // ZWEITER CUBE
         //
 
-        var geometry_blob = new THREE.BoxGeometry(scale_x, scale_y, scale_z)
-        geometry.translate(scale_x / 2, 0, 0)
+        var geometry_blob = new THREE.BoxGeometry(lenght_arms, scale_y, scale_z)
+        geometry.translate(lenght_arms / 2, 0, 0)
         var material_blob = new THREE.MeshPhongMaterial({ color: 0x00ff00 })
         var cube_blob = new THREE.Mesh(geometry, material_blob)
         cube_blob.receiveShadow = true
@@ -91,7 +109,7 @@
 
         scene.add(cube_blob)
 
-        cube_blob.position.x = -scale_x
+        cube_blob.position.x = -lenght_arms
 
         //kleiner debug teil
         //var kleineDebugVariable = getObjectByName('arm1')
@@ -100,9 +118,9 @@
 
         cube_blob.add(cube)
 
-        cube_blob.position.x = cube_blob.position.x + scale_x
+        cube_blob.position.x = cube_blob.position.x + lenght_arms
 
-        cube.position.x = scale_x
+        cube.position.x = lenght_arms
         cube.position.z = 0
         cube.position.y = 0
 
@@ -119,37 +137,92 @@
 
         scene.add(plate)
 
+        //plate.rotation.y = -NEUNZIG_GRAD;
+
         plate.add(cube_blob)
       }
 
-      /* function buildGroundPlate() {
-        var geometry = new THREE.BoxGeometry(20, 1, 20)
-        geometry.translate(0, 0, 0)
-        var material = new THREE.MeshPhongMaterial({ color: 0xff0000 })
-        var plate = new THREE.Mesh(geometry, material)
-        plate.receiveShadow = true
-        plate.castShadow = true
-        plate.position.x = 0
-        plate.position.y = 0
-        plate.position.z = 0
-        plate.name = 'groundPlate'
+      function moveArmsToPoint(to) {
+        const from = new THREE.Vector3(0, 0, 0)
+        var EF = Math.abs(to.z - from.z)
+        var MF = Math.abs(to.x - from.x)
+        var ME = Math.sqrt(MF ** 2 + EF ** 2)
 
-        scene.add(plate)
-        plate.add(getObjectByName('arm1'))
+        var arm1 = scene.getObjectByName('arm1')
+        var arm2 = scene.getObjectByName('arm2')
+        var groundPlate = scene.getObjectByName('groundPlate')
 
-        var arm2 = getObjectByName('arm2');
-        var arm1 = getObjectByName('arm1');
+        var EF = rotateArm(from, to, EF)
+        var alpha_rotation = rotateArm(from, to, alpha)
 
-      }*/
+        groundPlate.rotation.y = alpha_rotation
+
+        var PQ = to.y - from.y
+        var SQ = to.x - from.x
+        var SP = Math.sqrt(PQ * PQ + ME * ME)
+        //var SP = Math.sqrt(lenght_arms ** 2 + lenght_arms ** 2);
+        var alpha1 = Math.asin(PQ / SP)
+        var alpha2 = Math.acos(SP ** 2 / (2 * SP * lenght_arms))
+        var alpha = alpha1 + alpha2
+        var beta = Math.acos(
+          (lenght_arms ** 2 + lenght_arms ** 2 - SP ** 2) /
+            (2 * lenght_arms ** 2),
+        )
+        console.log('alpha 2 = ' + alpha2)
+        console.log('alpha 1 = ' + alpha1)
+        console.log('degree beta = ' + radToDeg(beta))
+        console.log('alpha = ' + alpha)
+        console.log('degree alpha = ' + radToDeg(alpha))
+        console.log('PQ = ' + PQ)
+        console.log('SP = ' + SP)
+
+        arm1.rotation.z = alpha
+        arm2.rotation.z = -2 * NEUNZIG_GRAD + beta
+      }
+
+      function rotateArm(from, to) {
+        var EF = Math.abs(to.z - from.z)
+        var MF = Math.abs(to.x - from.x)
+        var ME = Math.sqrt(MF ** 2 + EF ** 2)
+        var alpha = Math.asin(EF / ME)
+
+        if (to.x >= from.x && to.z <= from.z) {
+          console.log('currently rotating to z-, x+')
+        }
+
+        if (to.x <= from.x && to.z <= from.z) {
+          alpha = 2 * NEUNZIG_GRAD - alpha
+        }
+
+        if (to.x <= from.x && to.z >= from.z) {
+          alpha = alpha + 2 * NEUNZIG_GRAD
+        }
+
+        if (to.x >= from.x && to.z >= from.z) {
+          alpha = 4 * NEUNZIG_GRAD - alpha
+        }
+
+        console.log('MF beim rotieren ist = ' + MF)
+        console.log('ME beim rotieren ist = ' + ME)
+        console.log('EF beim rotieren ist = ' + EF)
+        console.log('alpha beim rotieren ist = ' + alpha)
+        //console.log('beta beim rotieren ist = ' + beta)
+        return alpha
+      }
+
+      function bewegen(){
+        var cube = scene.getObjectByName('cube')
+        var posCube = cube.position;
+        moveArmsToPoint(posCube);
+      }8
+  
 
       // buildGroundPlate()
       addArmsWithPivots({ x: 1, y: 1, z: 1 }, 35, 5, 5)
-      move_by_angels(75, 20, 10)
-
-
-
+      //move_by_angels(75, 75, 0)
+      moveArmsToPoint(new THREE.Vector3(22, 14, -50))
+      var cubi = addBasicCube(new THREE.Vector3(22, 14, -50))
       
-
 
       /*
 
@@ -200,7 +273,7 @@
       }
 
       //camera.rotation.x = -20;
-
+     
       function render() {
         requestAnimationFrame(render)
         // Enable Shadows in the Renderer
