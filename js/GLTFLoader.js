@@ -1,4 +1,3 @@
-( function () {
 
 	class GLTFLoader extends THREE.Loader {
 
@@ -3941,4 +3940,3 @@
 
 	THREE.GLTFLoader = GLTFLoader;
 
-} )();

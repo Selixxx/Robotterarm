@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>LOOOOOOL</title>
+    <title>Roboterarm</title>
     <style>
       canvas {
         width: 100%;
@@ -12,16 +12,25 @@
 
   <body>
     <div>
-      <button type="button" style="height: 200; width: 400;"  onclick="bewegen()"> Bewegen</button>
+      <button type="button" style="height: 200; width: 400;" onclick="test()">
+        Bewegen
+      </button>
     </div>
     <script src="./js/three.js"></script>
-    <script type="text/javascript" src="lib/dat.gui.min.js"></script>
+    <script type="text/javascript" src="./lib/dat.gui.min.js"></script>
+    <script type="text/javascript" src="./js/GLTFLoader.js"></script>
+    <script src="./js/OrbitControls.js"></script>
     <script>
       const NEUNZIG_GRAD = Math.PI / 2
-      const lenght_arms = 35
+      const arm_length = 35
+      var renderer = new THREE.WebGLRenderer()
+      renderer.setClearColor(0xaaaaaa)
+      renderer.setSize(window.innerWidth, window.innerHeight)
+      document.body.appendChild(renderer.domElement)
 
       var scene = new THREE.Scene()
-      var gui = new dat.GUI();
+      var gui = new dat.GUI()
+      // const loader = new GLTFLoader();
 
       var camera = new THREE.PerspectiveCamera(
         75,
@@ -43,16 +52,12 @@
       light.shadow.camera.near = 0.1
       light.shadow.camera.far = 25
       scene.add(light)
-      var renderer = new THREE.WebGLRenderer()
-      renderer.setClearColor(0xaaaaaa)
-      renderer.setSize(window.innerWidth, window.innerHeight)
-      document.body.appendChild(renderer.domElement)
 
       function addBasicCube(pos) {
-        var geometry = new THREE.BoxGeometry(7, 7, 7)
-        geometry.translate(7 / 2, 3.5, 3.5)
+        var geometry = new THREE.SphereGeometry(4, 12, 12)
+        //geometry.translate(7 / 2, 3.5, 3.5)
         var material = new THREE.MeshPhongMaterial({
-          color: 0xff0000,
+          color: 0x89cff0,
         })
         var cube = new THREE.Mesh(geometry, material)
         cube.receiveShadow = true
@@ -63,10 +68,9 @@
         cube.position.x = pos.x
         cube.position.y = pos.y
         cube.position.z = pos.z
-        gui.add(cube.position, "x", -50, 50)
-        gui.add(cube.position, "y", 0, 50)
-        gui.add(cube.position, "z", -50, 50)
-        
+        gui.add(cube.position, 'x', -50, 75)
+        gui.add(cube.position, 'y', 0, 50)
+        gui.add(cube.position, 'z', -50, 50)
       }
 
       function degToRad(angle) {
@@ -77,8 +81,12 @@
         return (angle / Math.PI) * 180
       }
 
-      function addArmsWithPivots(pos, lenght_arms, scale_y, scale_z) {
+      async function addArmsWithPivots(pos, lenght_arms, scale_y, scale_z) {
         //add arm
+        // var armModel = await loadModel()
+
+        //var ArmModel = scene.getObjectByName("ArmModel")
+
         var geometry = new THREE.BoxGeometry(lenght_arms, scale_y, scale_z)
         geometry.translate(0, 0, 0)
         var material = new THREE.MeshPhongMaterial({ color: 0x0000ff })
@@ -92,13 +100,15 @@
 
         scene.add(cube)
 
+        //var cube = scene.getObjectByName('ArmModel')
+
         //
         // ZWEITER CUBE
         //
 
         var geometry_blob = new THREE.BoxGeometry(lenght_arms, scale_y, scale_z)
         geometry.translate(lenght_arms / 2, 0, 0)
-        var material_blob = new THREE.MeshPhongMaterial({ color: 0x00ff00 })
+        var material_blob = new THREE.MeshPhongMaterial({ color: 0xff69b4 })
         var cube_blob = new THREE.Mesh(geometry, material_blob)
         cube_blob.receiveShadow = true
         cube_blob.castShadow = true
@@ -141,13 +151,23 @@
 
         plate.add(cube_blob)
       }
+      // addArmsWithPivots(new THREE.Vector3(0, 0, 0), lenght_arms, 5, 5)
+      //moveArmsToPoint(new THREE.Vector3(10, 10, 10))
 
       function moveArmsToPoint(to) {
+        /***********************
+        alpha rotation = rotation.y armBottom && armTop
+        pos gelenk =
+
+        ***********************/
         const from = new THREE.Vector3(0, 0, 0)
         var EF = Math.abs(to.z - from.z)
         var MF = Math.abs(to.x - from.x)
         var ME = Math.sqrt(MF ** 2 + EF ** 2)
 
+        /*var arm2 = scene.getObjectByName('ArmModelTop')
+        var arm1 = scene.getObjectByName('ArmModelBottom')
+        var groundPlate = scene.getObjectByName('groundPlate')*/
         var arm1 = scene.getObjectByName('arm1')
         var arm2 = scene.getObjectByName('arm2')
         var groundPlate = scene.getObjectByName('groundPlate')
@@ -162,11 +182,10 @@
         var SP = Math.sqrt(PQ * PQ + ME * ME)
         //var SP = Math.sqrt(lenght_arms ** 2 + lenght_arms ** 2);
         var alpha1 = Math.asin(PQ / SP)
-        var alpha2 = Math.acos(SP ** 2 / (2 * SP * lenght_arms))
+        var alpha2 = Math.acos(SP ** 2 / (2 * SP * arm_length))
         var alpha = alpha1 + alpha2
         var beta = Math.acos(
-          (lenght_arms ** 2 + lenght_arms ** 2 - SP ** 2) /
-            (2 * lenght_arms ** 2),
+          (arm_length ** 2 + arm_length ** 2 - SP ** 2) / (2 * arm_length ** 2),
         )
         console.log('alpha 2 = ' + alpha2)
         console.log('alpha 1 = ' + alpha1)
@@ -178,6 +197,175 @@
 
         arm1.rotation.z = alpha
         arm2.rotation.z = -2 * NEUNZIG_GRAD + beta
+        position = new THREE.Vector3(0, 0, 0)
+        calculateJoint(position, alpha)
+      }
+
+      async function loadModel() {
+        const loader = new GLTFLoader()
+        var arm2 = loader.load('./arm_top2.gltf', function (gltf) {
+          const armGeometry = gltf.scene.children.find(
+            (child) => child.name === 'Sphere',
+          ).geometry
+          const ArmMaterial = new THREE.MeshPhongMaterial({
+            color: 0x9900ff,
+          })
+          var armMesh = new THREE.Mesh(armGeometry, ArmMaterial)
+          armMesh.name = 'ArmModel'
+
+          armMesh.position.y = 10
+          armMesh.position.x = 0
+          armMesh.position.z = 0
+          armMesh.scale.x = 3
+          armMesh.scale.y = 3
+          armMesh.scale.z = 3
+          return armMesh
+          console.log(armMesh)
+        })
+
+        return await arm2
+      }
+
+      function createArm(length, color) {
+        var arm = new THREE.BoxGeometry(length, 3, 3)
+        arm.translate(length / 2, 0, 0)
+        var material = new THREE.MeshPhongMaterial({ color: color })
+        return new THREE.Mesh(arm, material)
+      }
+      function drawTestArm(to) {
+        console.log(to)
+        var l_bas = Math.sqrt(to.x ** 2 + to.y ** 2 + to.z ** 2)
+        var rot_y = Math.acos(Math.abs(to.x / Math.sqrt(to.x ** 2 + to.y ** 2)))
+        if (to.x < 0 && to.z > 0) {
+          rot_y = 2 * NEUNZIG_GRAD - rot_y
+        } else if (to.x < 0 && to.z < 0) {
+          rot_y = 2 * NEUNZIG_GRAD + rot_y
+          console.log('--')
+        } else if (to.x > 0 && to.z < 0) {
+          rot_y = -rot_y
+          console.log('+-')
+        }
+
+        var rot_z = Math.acos(
+          Math.abs(Math.sqrt(to.x ** 2 + to.y ** 2)) / l_bas,
+        )
+        console.log('rot_y:' + radToDeg(rot_y) + ', rot_z:' + radToDeg(rot_z))
+
+        // var adjustedAngles = adjustAngles(new THREE.Vector3(0, 0, 0), to, rot_y, rot_z)
+        // rot_y = adjustedAngles.rot_y
+        // rot_z = adjustedAngles.rot_z
+        // console.log(adjustedAngles)
+        var green_element = createArm(l_bas, 0x00ff00)
+        scene.add(green_element)
+        green_element.position.x = 0
+        green_element.position.y = 0
+        green_element.position.z = 0
+
+        green_element.rotation.y = rot_y
+        green_element.rotation.z = rot_z
+
+        //adding the 2 arms
+        var joint = new THREE.Vector3(0, 0, 0)
+        rot_a = Math.acos(l_bas / 2 / arm_length)
+        joint.y = Math.sin(rot_a + rot_z) * arm_length
+        var zwerg = Math.cos(rot_a + rot_z) * arm_length
+        joint.x = zwerg * Math.cos(rot_y)
+        joint.z = -zwerg * Math.sin(rot_y)
+
+        var red_element = scene.getObjectByName('ArmModelBottom')//createArm(arm_length, 0xff0000) //
+        scene.add(red_element)
+        red_element.position.x = 0
+        red_element.position.y = 0
+
+        red_element.rotation.z = rot_z + rot_a - NEUNZIG_GRAD
+        red_element.rotation.y = rot_y
+
+        var blue_element = scene.getObjectByName('ArmModelTop') //createArm(arm_length, 0x0000ff)//
+        scene.add(blue_element)
+
+        blue_element.position.x = joint.x
+        blue_element.position.y = joint.y
+        blue_element.position.z = joint.z
+
+        blue_element.rotation.z = rot_z - rot_a - NEUNZIG_GRAD
+        blue_element.rotation.y = rot_y
+        console.log(blue_element.position)
+        console.log(joint)
+      }
+
+      function test() {
+        //  var armTop = scene.getObjectByName('ArmModelTop')
+        //armTop.position.x = 0
+        //armTop.rotation.y = NEUNZIG_GRAD
+        drawTestArm(new THREE.Vector3(0, 20, -10))
+      }
+
+      /*function buildArmModels() {
+        const geometryArmBottom = new THREE.CylinderGeometry(3, 3, 35, 32)
+        geometryArmBottom.translate(0,35/2,0)
+        const materialArmBottom = new THREE.MeshPhongMaterial({ color: 0xffff00 })
+        const armBottom = new THREE.Mesh(geometryArmBottom, materialArmBottom)
+        
+        armBottom.name = 'ArmModelBottom'
+        scene.add(armBottom)
+
+        var plate_geometry = new THREE.BoxGeometry(20, 1, 20)
+              plate_geometry.translate(0, 0, 0)
+              var plate_material = new THREE.MeshPhongMaterial({
+                color: 0xff0000,
+              })
+              var plateMesh = new THREE.Mesh(plate_geometry, plate_material)
+              plateMesh.receiveShadow = true
+              plateMesh.castShadow = true
+              plateMesh.position.x = 0
+              plateMesh.position.y = 0
+              plateMesh.position.z = 0
+              plateMesh.name = 'groundPlate'
+              scene.add(plateMesh)
+      }
+      buildArmModels()*/
+      
+
+      function addCoordianteSystem() {
+        var x_Arm = createArm(10, 0)
+        scene.add(x_Arm)
+        x_Arm.position.x = 0
+        x_Arm.position.y = 0
+        x_Arm.position.z = 0
+
+        x_Arm = createArm(10, 0)
+        scene.add(x_Arm)
+        x_Arm.position.x = 0
+        x_Arm.position.y = 0
+        x_Arm.position.z = 0
+        x_Arm.rotation.y = NEUNZIG_GRAD
+        x_Arm = createArm(10, 0)
+        scene.add(x_Arm)
+        x_Arm.position.x = 0
+        x_Arm.position.y = 0
+        x_Arm.position.z = 0
+        x_Arm.rotation.z = NEUNZIG_GRAD
+      }
+
+      function adjustAngles(from, to, rot_y, rot_z) {
+        console.log('253: ' + radToDeg(rot_y) + ', ' + radToDeg(rot_z))
+
+        if (to.x <= from.x && to.z <= from.z) {
+          rot_y = 2 * NEUNZIG_GRAD - rot_y
+        }
+        console.log('258: ' + radToDeg(rot_y) + ', ' + radToDeg(rot_z))
+
+        if (to.x <= from.x && to.z >= from.z) {
+          rot_y = rot_y + 2 * NEUNZIG_GRAD
+        }
+        console.log('264: ' + radToDeg(rot_y) + ', ' + radToDeg(rot_z))
+
+        if (to.x >= from.x && to.z >= from.z) {
+          rot_y = 4 * NEUNZIG_GRAD - rot_y
+        }
+        console.log('269: ' + radToDeg(rot_y) + ', ' + radToDeg(rot_z))
+
+        return { rot_y: rot_y, rot_z: rot_z }
       }
 
       function rotateArm(from, to) {
@@ -210,19 +398,148 @@
         return alpha
       }
 
-      function bewegen(){
-        var cube = scene.getObjectByName('cube')
-        var posCube = cube.position;
-        moveArmsToPoint(posCube);
-      }8
-  
+      function calculateJoint(to, alpha) {
+        var jointPosition = new THREE.Vector3(0, 0, 0)
+        var BC = Math.sin(alpha) * arm_length
+        jointPosition.y = BC
+        var AC = Math.cos(alpha) * arm_length
+        console.log('AC = ' + AC)
+        var DC = Math.sin(alpha) * arm_length
+        console.log('DC = ' + DC)
+        var AD = Math.sqrt(arm_length ** 2 - BC ** 2)
+        console.log('AD = ' + AD)
 
-      // buildGroundPlate()
-      addArmsWithPivots({ x: 1, y: 1, z: 1 }, 35, 5, 5)
-      //move_by_angels(75, 75, 0)
-      moveArmsToPoint(new THREE.Vector3(22, 14, -50))
-      var cubi = addBasicCube(new THREE.Vector3(22, 14, -50))
-      
+        if (to.x <= 0 && to.z >= 0) {
+          DC = -DC
+        }
+        if (to.x >= 0 && to.z <= 0) {
+          AD = -AD
+        }
+        if (to.x <= 0 && to.z <= 0) {
+          AD = -AD
+          DC = -DC
+        }
+        if (to.x > 0 && to.z > 0) {
+        }
+        jointPosition.x = AD
+        jointPosition.z = AC
+        addBasicCube(jointPosition)
+      }
+
+      function bewegen() {
+        var cube = scene.getObjectByName('moveToObject')
+        var posCube = new THREE.Vector3(
+          cube.position.x,
+          cube.position.y,
+          cube.position.z,
+        )
+        moveArmsToPoint(posCube)
+      }
+
+      function init() {
+        const loader = new GLTFLoader()
+        //         loader.load('./arm_top2.gltf', function (gltf) {
+        loader.load('./test_arm1.gltf', (gltf) => {
+          const armGeometry = gltf.scene.children.find(
+            (child) => child.name === 'Cube',
+          ).geometry
+          armGeometry.translate(-1,0,0)
+          const ArmMaterial = new THREE.MeshPhongMaterial({
+            color: 0x9900ff,
+          })
+          var armMeshArmTop = new THREE.Mesh(armGeometry, ArmMaterial)
+          armMeshArmTop.name = 'ArmModelTop'
+
+          armMeshArmTop.position.x = 0
+          armMeshArmTop.position.y = 0
+          armMeshArmTop.position.z = 0
+          armMeshArmTop.scale.x = .5
+          armMeshArmTop.scale.y = .5
+          armMeshArmTop.scale.z = .6
+          //scene.add(armMeshArmTop)
+          /*
+            fängt an den zweiten Arm zu laden
+            */
+          loader.load('./test_arm2.gltf', (gltf) => {
+            const armGeometry = gltf.scene.children.find(
+              (child) => child.name === 'Cube',
+            ).geometry
+            armGeometry.translate(0, 0, 0)
+            const ArmMaterial = new THREE.MeshPhongMaterial({
+              color: 0x0099ff,
+            })
+            var armMeshArmBottom = new THREE.Mesh(armGeometry, ArmMaterial)
+            
+            armMeshArmBottom.name = 'ArmModelBottom'
+            armMeshArmBottom.position.x = 0
+            armMeshArmBottom.position.y = 0
+            armMeshArmBottom.position.z = 0
+            armMeshArmBottom.rotation.x = 0
+            armMeshArmBottom.rotation.y = -NEUNZIG_GRAD
+            armMeshArmBottom.rotation.z = 0
+            armMeshArmBottom.scale.x = 2.25
+            armMeshArmBottom.scale.y = 2.25
+            armMeshArmBottom.scale.z = 2.25
+
+            //scene.add(armMeshArmBottom)
+            /*
+            fängt an den cube zu laden
+            */
+            loader.load('./moveToObject.gltf', (gltf) => {
+              const armGeometry = gltf.scene.children.find(
+                (child) => child.name === 'Cube',
+              ).geometry
+              const ArmMaterial = new THREE.MeshPhongMaterial({
+                color: 0xff99ff,
+              })
+              var armMeshMoveToObject = new THREE.Mesh(armGeometry, ArmMaterial)
+              //scene.add(armMeshMoveToObject)
+              armMeshMoveToObject.position.y = 15
+              armMeshMoveToObject.scale.x = 2
+              armMeshMoveToObject.scale.y = 2
+              armMeshMoveToObject.scale.z = 2
+
+              var plate_geometry = new THREE.BoxGeometry(20, 1, 20)
+              plate_geometry.translate(0, 0, 0)
+              var plate_material = new THREE.MeshPhongMaterial({
+                color: 0xff0000,
+              })
+              var plateMesh = new THREE.Mesh(plate_geometry, plate_material)
+              plateMesh.receiveShadow = true
+              plateMesh.castShadow = true
+              plateMesh.position.x = 0
+              plateMesh.position.y = 0
+              plateMesh.position.z = 0
+              plateMesh.name = 'groundPlate'
+
+              //scene.add(plateMesh)
+              //armMeshArmBottom.add(armMeshArmTop)
+              // scene.add(armMeshArmBottom)
+              // scene.add(plateMesh)
+              scene.add(armMeshArmTop)
+              scene.add(armMeshArmBottom)
+
+              // plateMesh.add(armMeshArmBottom)
+
+              scene.add(plateMesh)
+
+              //   console.log(scene.children[2].children[0].children[0])
+
+              //scene.add(plateMesh)
+
+              /*armMeshArmBottom.rotation.x = 0
+              armMeshArmBottom.rotation.y = -NEUNZIG_GRAD
+              armMeshArmTop.rotation.z = 0
+              armMeshArmBottom.rotation.x = NEUNZIG_GRAD / 2
+              */
+              //plateMesh.rotation.y = NEUNZIG_GRAD / 2
+              //armMeshArmBOt.rotation.y = NEUNZIG_GRAD / 2
+            })
+          })
+        })
+      }
+
+      init()
 
       /*
 
@@ -273,7 +590,8 @@
       }
 
       //camera.rotation.x = -20;
-     
+      controls = new THREE.OrbitControls(camera, renderer.domElement)
+
       function render() {
         requestAnimationFrame(render)
         // Enable Shadows in the Renderer
@@ -281,6 +599,8 @@
         renderer.shadowMap.type = THREE.BasicShadowMap
         renderer.render(scene, camera)
       }
+
+      // init()
 
       render()
       camera_mover_debug()
