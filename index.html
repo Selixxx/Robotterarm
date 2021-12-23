@@ -11,8 +11,12 @@
   </head>
 
   <body>
+    <p>Um das Modell zu Laden, klicken sie "Bewegen". <br> 
+      Wenn sie einen Punkt einstellen möchten, zu dem sich der arm bewegen soll, stellen sie diesen auf dem entsprechenden Slider ein. <br>
+       Dieser kontrolliert die verscheidenen Kordinaten des Punktes, zu welchem bei erneutem Drücken der Arm bewegt wird.<br>
+       Genauere Infos über Funktionsweise u.ä. finden sie <a href="https://github.com/Selixxx/Robotterarm/blob/main/README.md">hier</a></p>
     <div>
-      <button type="button" style="height: 200; width: 400;" onclick="test()">
+      <button type="button" style="width:120px;height:60px;" onclick="test()">
         Bewegen
       </button>
     </div>
@@ -29,7 +33,7 @@
       document.body.appendChild(renderer.domElement)
 
       var scene = new THREE.Scene()
-      var gui = new dat.GUI()
+      const gui = new dat.GUI()
       // const loader = new GLTFLoader();
 
       var camera = new THREE.PerspectiveCamera(
@@ -233,18 +237,23 @@
         return new THREE.Mesh(arm, material)
       }
       function drawTestArm(to) {
-        console.log(to)
+        console.log("to: x="+to.x+",y="+to.y+", z="+to.z)
         var l_bas = Math.sqrt(to.x ** 2 + to.y ** 2 + to.z ** 2)
         var rot_y = Math.acos(Math.abs(to.x / Math.sqrt(to.x ** 2 + to.y ** 2)))
-        if (to.x < 0 && to.z > 0) {
+        if (to.x <= 0 && to.y >= 0) {
+          rot_y = rot_y + 2 * NEUNZIG_GRAD
+          console.log('-+')
+        } else if (to.x <= 0 && to.y <= 0) {
           rot_y = 2 * NEUNZIG_GRAD - rot_y
-        } else if (to.x < 0 && to.z < 0) {
-          rot_y = 2 * NEUNZIG_GRAD + rot_y
           console.log('--')
-        } else if (to.x > 0 && to.z < 0) {
+        }  else if (to.x >= 0 && to.y <= 0) {
           rot_y = -rot_y
           console.log('+-')
         }
+          else if(to.x > 0 && to.y > 0){
+            rot_y = -rot_y
+            console.log("++")
+          }
 
         var rot_z = Math.acos(
           Math.abs(Math.sqrt(to.x ** 2 + to.y ** 2)) / l_bas,
@@ -256,7 +265,7 @@
         // rot_z = adjustedAngles.rot_z
         // console.log(adjustedAngles)
         var green_element = createArm(l_bas, 0x00ff00)
-        scene.add(green_element)
+        //scene.add(green_element)
         green_element.position.x = 0
         green_element.position.y = 0
         green_element.position.z = 0
@@ -297,7 +306,8 @@
         //  var armTop = scene.getObjectByName('ArmModelTop')
         //armTop.position.x = 0
         //armTop.rotation.y = NEUNZIG_GRAD
-        drawTestArm(new THREE.Vector3(0, 20, -10))
+        //drawTestArm(new THREE.Vector3(0, 20, -10))
+        bewegen()
       }
 
       /*function buildArmModels() {
@@ -427,14 +437,15 @@
       }
 
       function bewegen() {
-        var cube = scene.getObjectByName('moveToObject')
+        var cube = scene.getObjectByName('MoveToObject')
         var posCube = new THREE.Vector3(
           cube.position.x,
-          cube.position.y,
           cube.position.z,
+          cube.position.y,
         )
-        moveArmsToPoint(posCube)
+        drawTestArm(posCube)
       }
+      
 
       function init() {
         const loader = new GLTFLoader()
@@ -493,11 +504,16 @@
                 color: 0xff99ff,
               })
               var armMeshMoveToObject = new THREE.Mesh(armGeometry, ArmMaterial)
+              armMeshMoveToObject.name = 'MoveToObject'
               //scene.add(armMeshMoveToObject)
-              armMeshMoveToObject.position.y = 15
+              armMeshMoveToObject.position.x = 25
               armMeshMoveToObject.scale.x = 2
               armMeshMoveToObject.scale.y = 2
               armMeshMoveToObject.scale.z = 2
+              scene.add(armMeshMoveToObject)
+              gui.add(armMeshMoveToObject.position, "x", -50, +50)   
+              gui.add(armMeshMoveToObject.position, "y", 0, +50)   
+              gui.add(armMeshMoveToObject.position, "z", -50, +50)              
 
               var plate_geometry = new THREE.BoxGeometry(20, 1, 20)
               plate_geometry.translate(0, 0, 0)
