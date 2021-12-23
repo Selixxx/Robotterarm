@@ -11,14 +11,13 @@
   </head>
 
   <body>
-    <p>Um das Modell zu Laden, klicken sie "Bewegen". <br> 
+    <p> 
       Wenn sie einen Punkt einstellen möchten, zu dem sich der arm bewegen soll, stellen sie diesen auf dem entsprechenden Slider ein. <br>
-       Dieser kontrolliert die verscheidenen Kordinaten des Punktes, zu welchem bei erneutem Drücken der Arm bewegt wird.<br>
-       Genauere Infos über Funktionsweise u.ä. finden sie <a href="https://github.com/Selixxx/Robotterarm/blob/main/README.md">hier</a></p>
+       Dieser kontrolliert die verscheidenen Kordinaten des Punktes, zu welchem der Arm sich bewegt<br>
+       Genauere Infos über Funktionsweise u.ä. finden sie <a href="https://github.com/Selixxx/Robotterarm/blob/main/README.md">hier</a><br>
+      &copy; Jonatan Tschech</p>
     <div>
-      <button type="button" style="width:120px;height:60px;" onclick="test()">
-        Bewegen
-      </button>
+     
     </div>
     <script src="./js/three.js"></script>
     <script type="text/javascript" src="./lib/dat.gui.min.js"></script>
@@ -57,25 +56,6 @@
       light.shadow.camera.far = 25
       scene.add(light)
 
-      function addBasicCube(pos) {
-        var geometry = new THREE.SphereGeometry(4, 12, 12)
-        //geometry.translate(7 / 2, 3.5, 3.5)
-        var material = new THREE.MeshPhongMaterial({
-          color: 0x89cff0,
-        })
-        var cube = new THREE.Mesh(geometry, material)
-        cube.receiveShadow = true
-        cube.castShadow = true
-        cube.position = pos
-        cube.name = 'cube'
-        scene.add(cube)
-        cube.position.x = pos.x
-        cube.position.y = pos.y
-        cube.position.z = pos.z
-        gui.add(cube.position, 'x', -50, 75)
-        gui.add(cube.position, 'y', 0, 50)
-        gui.add(cube.position, 'z', -50, 50)
-      }
 
       function degToRad(angle) {
         return (angle * Math.PI) / 180
@@ -83,151 +63,6 @@
 
       function radToDeg(angle) {
         return (angle / Math.PI) * 180
-      }
-
-      async function addArmsWithPivots(pos, lenght_arms, scale_y, scale_z) {
-        //add arm
-        // var armModel = await loadModel()
-
-        //var ArmModel = scene.getObjectByName("ArmModel")
-
-        var geometry = new THREE.BoxGeometry(lenght_arms, scale_y, scale_z)
-        geometry.translate(0, 0, 0)
-        var material = new THREE.MeshPhongMaterial({ color: 0x0000ff })
-        var cube = new THREE.Mesh(geometry, material)
-        cube.receiveShadow = true
-        cube.castShadow = true
-        cube.position.x = pos.x
-        cube.position.y = pos.y
-        cube.position.z = pos.z
-        cube.name = 'arm2'
-
-        scene.add(cube)
-
-        //var cube = scene.getObjectByName('ArmModel')
-
-        //
-        // ZWEITER CUBE
-        //
-
-        var geometry_blob = new THREE.BoxGeometry(lenght_arms, scale_y, scale_z)
-        geometry.translate(lenght_arms / 2, 0, 0)
-        var material_blob = new THREE.MeshPhongMaterial({ color: 0xff69b4 })
-        var cube_blob = new THREE.Mesh(geometry, material_blob)
-        cube_blob.receiveShadow = true
-        cube_blob.castShadow = true
-        cube_blob.position.x = pos.x
-        cube_blob.position.y = pos.y
-        cube_blob.position.z = pos.z
-        cube_blob.name = 'arm1'
-
-        scene.add(cube_blob)
-
-        cube_blob.position.x = -lenght_arms
-
-        //kleiner debug teil
-        //var kleineDebugVariable = getObjectByName('arm1')
-
-        //arm1.add(cube)
-
-        cube_blob.add(cube)
-
-        cube_blob.position.x = cube_blob.position.x + lenght_arms
-
-        cube.position.x = lenght_arms
-        cube.position.z = 0
-        cube.position.y = 0
-
-        var plate_geometry = new THREE.BoxGeometry(20, 1, 20)
-        plate_geometry.translate(0, 0, 0)
-        var plate_material = new THREE.MeshPhongMaterial({ color: 0xff0000 })
-        var plate = new THREE.Mesh(plate_geometry, plate_material)
-        plate.receiveShadow = true
-        plate.castShadow = true
-        plate.position.x = 0
-        plate.position.y = 0
-        plate.position.z = 0
-        plate.name = 'groundPlate'
-
-        scene.add(plate)
-
-        //plate.rotation.y = -NEUNZIG_GRAD;
-
-        plate.add(cube_blob)
-      }
-      // addArmsWithPivots(new THREE.Vector3(0, 0, 0), lenght_arms, 5, 5)
-      //moveArmsToPoint(new THREE.Vector3(10, 10, 10))
-
-      function moveArmsToPoint(to) {
-        /***********************
-        alpha rotation = rotation.y armBottom && armTop
-        pos gelenk =
-
-        ***********************/
-        const from = new THREE.Vector3(0, 0, 0)
-        var EF = Math.abs(to.z - from.z)
-        var MF = Math.abs(to.x - from.x)
-        var ME = Math.sqrt(MF ** 2 + EF ** 2)
-
-        /*var arm2 = scene.getObjectByName('ArmModelTop')
-        var arm1 = scene.getObjectByName('ArmModelBottom')
-        var groundPlate = scene.getObjectByName('groundPlate')*/
-        var arm1 = scene.getObjectByName('arm1')
-        var arm2 = scene.getObjectByName('arm2')
-        var groundPlate = scene.getObjectByName('groundPlate')
-
-        var EF = rotateArm(from, to, EF)
-        var alpha_rotation = rotateArm(from, to, alpha)
-
-        groundPlate.rotation.y = alpha_rotation
-
-        var PQ = to.y - from.y
-        var SQ = to.x - from.x
-        var SP = Math.sqrt(PQ * PQ + ME * ME)
-        //var SP = Math.sqrt(lenght_arms ** 2 + lenght_arms ** 2);
-        var alpha1 = Math.asin(PQ / SP)
-        var alpha2 = Math.acos(SP ** 2 / (2 * SP * arm_length))
-        var alpha = alpha1 + alpha2
-        var beta = Math.acos(
-          (arm_length ** 2 + arm_length ** 2 - SP ** 2) / (2 * arm_length ** 2),
-        )
-        console.log('alpha 2 = ' + alpha2)
-        console.log('alpha 1 = ' + alpha1)
-        console.log('degree beta = ' + radToDeg(beta))
-        console.log('alpha = ' + alpha)
-        console.log('degree alpha = ' + radToDeg(alpha))
-        console.log('PQ = ' + PQ)
-        console.log('SP = ' + SP)
-
-        arm1.rotation.z = alpha
-        arm2.rotation.z = -2 * NEUNZIG_GRAD + beta
-        position = new THREE.Vector3(0, 0, 0)
-        calculateJoint(position, alpha)
-      }
-
-      async function loadModel() {
-        const loader = new GLTFLoader()
-        var arm2 = loader.load('./arm_top2.gltf', function (gltf) {
-          const armGeometry = gltf.scene.children.find(
-            (child) => child.name === 'Sphere',
-          ).geometry
-          const ArmMaterial = new THREE.MeshPhongMaterial({
-            color: 0x9900ff,
-          })
-          var armMesh = new THREE.Mesh(armGeometry, ArmMaterial)
-          armMesh.name = 'ArmModel'
-
-          armMesh.position.y = 10
-          armMesh.position.x = 0
-          armMesh.position.z = 0
-          armMesh.scale.x = 3
-          armMesh.scale.y = 3
-          armMesh.scale.z = 3
-          return armMesh
-          console.log(armMesh)
-        })
-
-        return await arm2
       }
 
       function createArm(length, color) {
@@ -247,7 +82,7 @@
           rot_y = 2 * NEUNZIG_GRAD - rot_y
           console.log('--')
         }  else if (to.x >= 0 && to.y <= 0) {
-          rot_y = -rot_y
+          rot_y = rot_y
           console.log('+-')
         }
           else if(to.x > 0 && to.y > 0){
@@ -302,61 +137,7 @@
         console.log(joint)
       }
 
-      function test() {
-        //  var armTop = scene.getObjectByName('ArmModelTop')
-        //armTop.position.x = 0
-        //armTop.rotation.y = NEUNZIG_GRAD
-        //drawTestArm(new THREE.Vector3(0, 20, -10))
-        bewegen()
-      }
-
-      /*function buildArmModels() {
-        const geometryArmBottom = new THREE.CylinderGeometry(3, 3, 35, 32)
-        geometryArmBottom.translate(0,35/2,0)
-        const materialArmBottom = new THREE.MeshPhongMaterial({ color: 0xffff00 })
-        const armBottom = new THREE.Mesh(geometryArmBottom, materialArmBottom)
-        
-        armBottom.name = 'ArmModelBottom'
-        scene.add(armBottom)
-
-        var plate_geometry = new THREE.BoxGeometry(20, 1, 20)
-              plate_geometry.translate(0, 0, 0)
-              var plate_material = new THREE.MeshPhongMaterial({
-                color: 0xff0000,
-              })
-              var plateMesh = new THREE.Mesh(plate_geometry, plate_material)
-              plateMesh.receiveShadow = true
-              plateMesh.castShadow = true
-              plateMesh.position.x = 0
-              plateMesh.position.y = 0
-              plateMesh.position.z = 0
-              plateMesh.name = 'groundPlate'
-              scene.add(plateMesh)
-      }
-      buildArmModels()*/
-      
-
-      function addCoordianteSystem() {
-        var x_Arm = createArm(10, 0)
-        scene.add(x_Arm)
-        x_Arm.position.x = 0
-        x_Arm.position.y = 0
-        x_Arm.position.z = 0
-
-        x_Arm = createArm(10, 0)
-        scene.add(x_Arm)
-        x_Arm.position.x = 0
-        x_Arm.position.y = 0
-        x_Arm.position.z = 0
-        x_Arm.rotation.y = NEUNZIG_GRAD
-        x_Arm = createArm(10, 0)
-        scene.add(x_Arm)
-        x_Arm.position.x = 0
-        x_Arm.position.y = 0
-        x_Arm.position.z = 0
-        x_Arm.rotation.z = NEUNZIG_GRAD
-      }
-
+     
       function adjustAngles(from, to, rot_y, rot_z) {
         console.log('253: ' + radToDeg(rot_y) + ', ' + radToDeg(rot_z))
 
@@ -376,36 +157,6 @@
         console.log('269: ' + radToDeg(rot_y) + ', ' + radToDeg(rot_z))
 
         return { rot_y: rot_y, rot_z: rot_z }
-      }
-
-      function rotateArm(from, to) {
-        var EF = Math.abs(to.z - from.z)
-        var MF = Math.abs(to.x - from.x)
-        var ME = Math.sqrt(MF ** 2 + EF ** 2)
-        var alpha = Math.asin(EF / ME)
-
-        if (to.x >= from.x && to.z <= from.z) {
-          console.log('currently rotating to z-, x+')
-        }
-
-        if (to.x <= from.x && to.z <= from.z) {
-          alpha = 2 * NEUNZIG_GRAD - alpha
-        }
-
-        if (to.x <= from.x && to.z >= from.z) {
-          alpha = alpha + 2 * NEUNZIG_GRAD
-        }
-
-        if (to.x >= from.x && to.z >= from.z) {
-          alpha = 4 * NEUNZIG_GRAD - alpha
-        }
-
-        console.log('MF beim rotieren ist = ' + MF)
-        console.log('ME beim rotieren ist = ' + ME)
-        console.log('EF beim rotieren ist = ' + EF)
-        console.log('alpha beim rotieren ist = ' + alpha)
-        //console.log('beta beim rotieren ist = ' + beta)
-        return alpha
       }
 
       function calculateJoint(to, alpha) {
@@ -462,11 +213,12 @@
           armMeshArmTop.name = 'ArmModelTop'
 
           armMeshArmTop.position.x = 0
-          armMeshArmTop.position.y = 0
+          armMeshArmTop.position.y = 35
           armMeshArmTop.position.z = 0
           armMeshArmTop.scale.x = .5
           armMeshArmTop.scale.y = .5
           armMeshArmTop.scale.z = .6
+          armMeshArmTop.rotation.z = -NEUNZIG_GRAD
           //scene.add(armMeshArmTop)
           /*
             fängt an den zweiten Arm zu laden
@@ -506,14 +258,15 @@
               var armMeshMoveToObject = new THREE.Mesh(armGeometry, ArmMaterial)
               armMeshMoveToObject.name = 'MoveToObject'
               //scene.add(armMeshMoveToObject)
-              armMeshMoveToObject.position.x = 25
+              armMeshMoveToObject.position.x = 35
+              armMeshMoveToObject.position.y = 35
               armMeshMoveToObject.scale.x = 2
               armMeshMoveToObject.scale.y = 2
               armMeshMoveToObject.scale.z = 2
               scene.add(armMeshMoveToObject)
-              gui.add(armMeshMoveToObject.position, "x", -50, +50)   
-              gui.add(armMeshMoveToObject.position, "y", 0, +50)   
-              gui.add(armMeshMoveToObject.position, "z", -50, +50)              
+              gui.add(armMeshMoveToObject.position, "x", -50, +50).onChange(bewegen)
+              gui.add(armMeshMoveToObject.position, "y", 0, +50).onChange(bewegen)   
+              gui.add(armMeshMoveToObject.position, "z", -50, +50).onChange(bewegen)              
 
               var plate_geometry = new THREE.BoxGeometry(20, 1, 20)
               plate_geometry.translate(0, 0, 0)
@@ -527,58 +280,17 @@
               plateMesh.position.y = 0
               plateMesh.position.z = 0
               plateMesh.name = 'groundPlate'
-
-              //scene.add(plateMesh)
-              //armMeshArmBottom.add(armMeshArmTop)
-              // scene.add(armMeshArmBottom)
-              // scene.add(plateMesh)
               scene.add(armMeshArmTop)
               scene.add(armMeshArmBottom)
 
-              // plateMesh.add(armMeshArmBottom)
-
               scene.add(plateMesh)
-
-              //   console.log(scene.children[2].children[0].children[0])
-
-              //scene.add(plateMesh)
-
-              /*armMeshArmBottom.rotation.x = 0
-              armMeshArmBottom.rotation.y = -NEUNZIG_GRAD
-              armMeshArmTop.rotation.z = 0
-              armMeshArmBottom.rotation.x = NEUNZIG_GRAD / 2
-              */
-              //plateMesh.rotation.y = NEUNZIG_GRAD / 2
-              //armMeshArmBOt.rotation.y = NEUNZIG_GRAD / 2
             })
           })
         })
       }
 
       init()
-
-      /*
-
-
-        funktion drehmitwinkel( winkel 1 und winkel 2)
-
-          cube 1 rotation = winkel 1
-          cube 2 rotation = winkel 2
-
-
-
-      */
-
-      function move_by_angels(winkel_arm1, winkel_arm2, winkel_groundPlate) {
-        var arm1 = scene.getObjectByName('arm1')
-        var arm2 = scene.getObjectByName('arm2')
-        var groundPlate = scene.getObjectByName('groundPlate')
-
-        arm1.rotation.z = degToRad(winkel_arm1)
-        arm2.rotation.z = degToRad(-winkel_arm2)
-        groundPlate.rotation.y = degToRad(winkel_groundPlate)
-      }
-
+     
       function getObjectByName(name) {
         var arm2 = scene.getObjectByName(name)
       }
@@ -599,13 +311,7 @@
       function rotatePivot(degree, axe, object) {
         var pivot_debug = new THREE.Object3D()
       }
-      //(pos, scale_x, scale_y, scale_z)
 
-      function camera_mover_debug() {
-        //camera.position.x = camera.position.x + 20
-      }
-
-      //camera.rotation.x = -20;
       controls = new THREE.OrbitControls(camera, renderer.domElement)
 
       function render() {
@@ -616,10 +322,8 @@
         renderer.render(scene, camera)
       }
 
-      // init()
 
       render()
-      camera_mover_debug()
     </script>
   </body>
 </html>
